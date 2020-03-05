@@ -111,7 +111,7 @@ const init = () => {
 
     again.addEventListener('click', () => {
         location.reload();                        //reload - перезапускает страницу
-    })
+    });
 };
 
 init();
