@@ -38,7 +38,7 @@ const show = {
 };
 
 const fire = (event) => {
-    const target = event.target;
+    const target = event.target;    
     show.miss(target);    
     play.updateData = 'shot';
 };
@@ -48,5 +48,3 @@ const init = () => {
 };
 
 init();
-
-//
