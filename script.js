@@ -64,7 +64,8 @@ const show = {
 const fire = (event) => {
     const target = event.target;              
     if (target.classList.length !== 0        //если length(значение classList) не равняется нулю, тогда перезапуск ф-ции
-        || target.tagName !== 'TD')          //если нажали не в td (ячейку) - перезапуск ф-ции
+        || target.tagName !== 'TD' 
+        || game.shipCount < 1)          //если нажали не в td (ячейку) - перезапуск ф-ции
         return;                              //перезапуск ф-ции
     show.miss(target);    
     play.updateData = 'shot';
