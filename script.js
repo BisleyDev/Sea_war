@@ -8,25 +8,90 @@ const header = document.querySelector('.header');
 
 // создание кораблей
 const game = {
-    ships: [
-        {
-            location: ['26', '36', '46', '56'],
-            hit: ['', '', '', '']
-        }, 
-        {
-            location: ['11', '12', '13'],
-            hit: ['', '', '']
-        }, 
-        {
-            location: ['69', '79'],
-            hit: ['', '']
-        }, 
-        {
-            location: ['32'],
-            hit: ['']
+    ships: [],
+    shipCount: 0,
+    optionShip: {
+        count: [1, 2, 3, 4],
+        size: [4, 3, 2, 1]
+    },
+    collision: new Set(),
+    generateShip() {
+        for (let i = 0; i < this.optionShip.count.length; i++) {
+            //console.log('count: ' + this.optionShip.count[i]);
+            for (let j = 0; j < this.optionShip.count[i]; j++) {
+                //console.log('size: ' + this.optionShip.size[i]);
+                const size = this.optionShip.size[i];
+                const ship = this.generateOptionsShip(size);
+                this.ships.push(ship);
+                this.shipCount++;
+
+            }
         }
-    ],
-    shipCount: 4,
+    },
+    generateOptionsShip(shipSize) {
+        const shipNew = {
+            hit: [],
+            location: [],
+        };
+
+        // Рандомное размещение корабля
+        const direction = Math.random() < 0.5;
+        //координаты ячейки корабля
+        let x, y;
+
+        if (direction) {
+            x = Math.floor(Math.random() * 10);
+            y = Math.floor(Math.random() * (10 - shipSize));
+        } else {
+            x = Math.floor(Math.random() * (10 - shipSize));
+            y = Math.floor(Math.random() * 10);
+        }
+
+        // Генерация клеток по горизонтали и вертикали
+        for (let i = 0; i < shipSize; i++) {
+            if (direction) {
+                shipNew.location.push(x + '' + (y + i))
+            } else {
+                shipNew.location.push((x + i) + '' + y)
+            }
+            shipNew.hit.push('');
+
+        }
+
+        if (this.checkCollision(shipNew.location)) {
+            return this.generateOptionsShip(shipSize)
+        }
+
+        this.addCollision(shipNew.location);
+
+        return shipNew;
+    },
+    //Условия что бы корабли не накладывались друг на друга и не были впрытык
+    checkCollision(location) {
+        for (const coord of location) {
+            if (this.collision.has(coord)) {
+                return true;
+            }
+        }
+    },
+    addCollision(location) {
+        for (let i = 0; i < location.length; i++) {
+            const startCoordX = location[i][0] - 1;
+
+            for (let j = startCoordX; j < startCoordX + 3; j++) {
+                const startCoordY = location[i][1] - 1;
+
+                for (let z = startCoordY; z < startCoordY + 3; z++) {
+
+                    if (j >= 0 && j < 10 && z >= 0 && z < 10) {
+                        const coord = j + '' + z;
+                        this.collision.add(coord);
+                    
+                    }                                   
+                }
+            }
+        }
+    }
 };
 
 const play = {
@@ -63,9 +128,9 @@ const show = {
 
 const fire = (event) => {
     const target = event.target;              
-    if (target.classList.length !== 0        //если length(значение classList) не равняется нулю, тогда перезапуск ф-ции
-        || target.tagName !== 'TD' 
-        || game.shipCount < 1)          //если нажали не в td (ячейку) - перезапуск ф-ции
+    if (target.classList.length !== 0 ||        //если length(значение classList) не равняется нулю, тогда перезапуск ф-ции
+        target.tagName !== 'TD' ||         //если нажали не в td (ячейку) - перезапуск ф-ции
+        !game.shipCount)
         return;                              //перезапуск ф-ции
     show.miss(target);    
     play.updateData = 'shot';
@@ -86,7 +151,7 @@ const fire = (event) => {
 
                 game.shipCount -= 1;
 
-                if (game.shipCount < 1) {
+                if (!game.shipCount) {
                     header.textContent = 'Игра Окончена!';
                     header.style.color = 'red';
 
@@ -108,10 +173,16 @@ const fire = (event) => {
 const init = () => {
     enemy.addEventListener('click', fire);
     play.render();
-
+    game.generateShip();
     again.addEventListener('click', () => {
         location.reload();                        //reload - перезапускает страницу
     });
+    record.addEventListener('dblclick', () => {
+        localStorage.clear();
+        play.record = 0;
+        play.render();
+    });
+    console.log(game)
 };
 
 init();
